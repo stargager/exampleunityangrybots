@@ -15,6 +15,12 @@ class MechMovementMotor extends MovementMotor {
 	private var facingInRightDirection : boolean = false;
 	private var headRotation : Quaternion = Quaternion.identity;
 	
+	
+	 function OnPhotonSerializeView (stream : PhotonStream,  info : PhotonMessageInfo)    
+    {
+        OnPhotonSerializeViewBase(stream, info);
+    }
+
 	function FixedUpdate () {
 		var adjustedMovementDirection : Vector3 = movementDirection;
 		
@@ -42,7 +48,7 @@ class MechMovementMotor extends MovementMotor {
 		else
 			rotationAngle = 0;
 		var targetAngularVelocity : Vector3 = Vector3.up * Mathf.Clamp (rotationAngle, -turningSpeed * Mathf.Deg2Rad, turningSpeed * Mathf.Deg2Rad);
-		rigidbody.angularVelocity = Vector3.MoveTowards (rigidbody.angularVelocity, targetAngularVelocity, Time.deltaTime * turningSpeed * Mathf.Deg2Rad * 3);
+		GetComponent.<Rigidbody>().angularVelocity = Vector3.MoveTowards (GetComponent.<Rigidbody>().angularVelocity, targetAngularVelocity, Time.deltaTime * turningSpeed * Mathf.Deg2Rad * 3);
 		
 		/*
 		if ((transform.position - wallHit).magnitude > 2) {
@@ -58,11 +64,11 @@ class MechMovementMotor extends MovementMotor {
 		// Handle the movement of the character
 		var targetVelocity : Vector3;
 		if (facingInRightDirection)
-			targetVelocity = transform.forward * walkingSpeed + rigidbody.velocity.y * Vector3.up;
+			targetVelocity = transform.forward * walkingSpeed + GetComponent.<Rigidbody>().velocity.y * Vector3.up;
 		else
-			targetVelocity = rigidbody.velocity.y * Vector3.up;
+			targetVelocity = GetComponent.<Rigidbody>().velocity.y * Vector3.up;
 		
-		rigidbody.velocity = Vector3.MoveTowards (rigidbody.velocity, targetVelocity, Time.deltaTime * walkingSpeed * 3);
+		GetComponent.<Rigidbody>().velocity = Vector3.MoveTowards (GetComponent.<Rigidbody>().velocity, targetVelocity, Time.deltaTime * walkingSpeed * 3);
 		//transform.position += targetVelocity * Time.deltaTime * walkingSpeed * 3;
 	}
 	

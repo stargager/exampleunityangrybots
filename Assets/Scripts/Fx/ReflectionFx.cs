@@ -26,20 +26,18 @@ public class ReflectionFx : MonoBehaviour
 	
 	public void Start()
 	{
-		initialReflectionTextures = new Texture2D[reflectiveMaterials.Length];
+		if (!SystemInfo.supportsRenderTextures)
+			this.enabled = false;
+		
+		initialReflectionTextures = new Texture[reflectiveMaterials.Length];
 		for (int i = 0; i < reflectiveMaterials.Length; i++)
 		{
 			initialReflectionTextures[i] = reflectiveMaterials[i].GetTexture(reflectionSampler);
-		}		
-		
-		if (!SystemInfo.supportsRenderTextures)
-			this.enabled = false;
+		}
 	}
 	
 	public void OnDisable()
 	{
-		if (initialReflectionTextures == null)
-			return;
 		// restore initial reflection textures
 		for (int i = 0; i < reflectiveMaterials.Length; i++)
 		{
@@ -59,7 +57,7 @@ public class ReflectionFx : MonoBehaviour
 			go = new GameObject(reflName, typeof(Camera)); 
 		if(!go.GetComponent(typeof(Camera)))
 			go.AddComponent(typeof(Camera));
-		Camera reflectCamera = go.camera;				
+		Camera reflectCamera = go.GetComponent<Camera>();				
 		
 		reflectCamera.backgroundColor = clearColor;
 		reflectCamera.clearFlags = CameraClearFlags.SolidColor;				
@@ -130,7 +128,7 @@ public class ReflectionFx : MonoBehaviour
 		float closestDist = Mathf.Infinity;
 		Vector3 pos = Camera.main.transform.position;
 		foreach (Transform t in reflectiveObjects) {
-			if (t.renderer.isVisible) {
+			if (t.GetComponent<Renderer>().isVisible) {
 				float dist = (pos - t.position).sqrMagnitude;
 				if (dist < closestDist) {
 					closestDist = dist;

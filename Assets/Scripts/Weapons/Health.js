@@ -32,10 +32,10 @@ function Awake () {
 		var effect : GameObject = Spawner.Spawn (damagePrefab, Vector3.zero, Quaternion.identity);
 		effect.transform.parent = damageEffectTransform;
 		effect.transform.localPosition = Vector3.zero;
-		damageEffect = effect.particleEmitter;
-		var tempSize : Vector2 = Vector2(collider.bounds.extents.x,collider.bounds.extents.z);
+		damageEffect = effect.GetComponent.<ParticleEmitter>();
+		var tempSize : Vector2 = Vector2(GetComponent.<Collider>().bounds.extents.x,GetComponent.<Collider>().bounds.extents.z);
 		colliderRadiusHeuristic = tempSize.magnitude * 0.5;
-		damageEffectCenterYOffset = collider.bounds.extents.y;
+		damageEffectCenterYOffset = GetComponent.<Collider>().bounds.extents.y;
 		
 	}
 	if (scorchMarkPrefab) {
@@ -89,27 +89,51 @@ function OnDamage (amount : float, fromDirection : Vector3) {
 		damageEffect.Emit();// (particleAmount);
 	}
 	
-	// Die if no health left
-	if (health <= 0)
-	{
-		GameScore.RegisterDeath (gameObject);
-		
-		health = 0;
-		dead = true;
-		dieSignals.SendSignals (this);
-		enabled = false;
-		
-		// scorch marks
-		if (scorchMark) {
-			scorchMark.active = true;
-			// @NOTE: maybe we can justify a raycast here so we can place the mark
-			// on slopes with proper normal alignments
-			// @TODO: spawn a yield Sub() to handle placement, as we can
-			// spread calculations over several frames => cheap in total
-			var scorchPosition : Vector3 = collider.ClosestPointOnBounds (transform.position - Vector3.up * 100);
-			scorchMark.transform.position = scorchPosition + Vector3.up * 0.1;
-			scorchMark.transform.eulerAngles.y = Random.Range (0.0, 90.0);
+	var view : PhotonView = GetComponent(typeof(PhotonView));
+	if(view.isMine && !view.isSceneView){
+		Camera.main.SendMessage("OnDamage");
+	}
+	
+	if(PhotonNetwork.isMasterClient){
+	    // Die if no health left
+	    if (health <= 0) {		
+	        if(view.isSceneView){
+	            view.RPC("Die", PhotonTargets.AllBuffered);
+	        }else{
+	        view.RPC("Die", PhotonTargets.All);
+	     }
 		}
+		
+		var diff : float = lastSharedHP - health;
+		if(Mathf.Abs(diff)>5){
+		    view.RPC("SetHP", PhotonTargets.Others, health);
+		}		
+	}
+}
+
+@PunRPC
+function SetHP(newVal : float){
+    health = newVal;
+}
+var lastSharedHP : float = 100;
+
+@PunRPC
+function Die(){
+	health = 0;
+	dead = true;
+	dieSignals.SendSignals (this);
+	enabled = false;
+	
+	// scorch marks
+	if (scorchMark) {
+		scorchMark.active = true;
+		// @NOTE: maybe we can justify a raycast here so we can place the mark
+		// on slopes with proper normal alignments
+		// @TODO: spawn a yield Sub() to handle placement, as we can
+		// spread calculations over several frames => cheap in total
+		var scorchPosition : Vector3 = GetComponent.<Collider>().ClosestPointOnBounds (transform.position - Vector3.up * 100);
+		scorchMark.transform.position = scorchPosition + Vector3.up * 0.1;
+		scorchMark.transform.eulerAngles.y = Random.Range (0.0, 90.0);
 	}
 }
 

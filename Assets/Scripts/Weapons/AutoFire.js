@@ -1,5 +1,5 @@
 #pragma strict
-
+#pragma downcast
 @script RequireComponent (PerFrameRaycast)
 
 var bulletPrefab : GameObject;
@@ -66,15 +66,12 @@ function Update () {
 }
 
 function OnStartFire () {
-	if (Time.timeScale == 0)
-		return;
-	
 	firing = true;
 	
 	muzzleFlashFront.active = true;
 	
-	if (audio)
-		audio.Play ();
+	if (GetComponent.<AudioSource>())
+		GetComponent.<AudioSource>().Play ();
 }
 
 function OnStopFire () {
@@ -82,6 +79,24 @@ function OnStopFire () {
 	
 	muzzleFlashFront.active = false;
 	
-	if (audio)
-		audio.Stop ();
+	if (GetComponent.<AudioSource>())
+		GetComponent.<AudioSource>().Stop ();
 }
+
+
+function OnPhotonSerializeView ( stream : PhotonStream,  info : PhotonMessageInfo)    
+   {
+    if(stream.isWriting){
+    	stream.SendNext(firing);
+    
+    }else{
+    
+    	var val : boolean = stream.ReceiveNext();
+    	if(val)
+    	OnStartFire();
+    	else
+    	OnStopFire();
+    }
+   }
+
+

@@ -11,11 +11,10 @@ var glowColor : Color = Color.white;
 private var mat : Material;
 
 function Start () {
-	if (!playerTransform)
-		playerTransform = GameObject.FindWithTag ("Player").transform;	
+
 	pos = transform.position;
 	scale = transform.localScale;
-	mat = renderer.material;
+	mat = GetComponent.<Renderer>().material;
 	enabled = false;
 }
 
@@ -46,6 +45,9 @@ function OnBecameInvisible () {
 }
 
 function Update () {
+playerTransform = GameManager.GetClosestPlayer(transform.position);
+if(playerTransform==null) return;
+
 	var vec : Vector3 = (pos - playerTransform.position);
 	vec.y = 0.0f;
 	var distance = vec.magnitude;	

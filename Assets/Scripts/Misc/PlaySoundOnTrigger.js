@@ -6,10 +6,10 @@ var onlyPlayOnce : boolean = true;
 
 private var playedOnce : boolean = false;
 
-function OnTriggerEnter (unusedArg) {
+function OnTriggerEnter () {
 	if (playedOnce && onlyPlayOnce)
 		return;
 	
-	audio.Play ();
+	GetComponent.<AudioSource>().Play ();
 	playedOnce = true;
 }

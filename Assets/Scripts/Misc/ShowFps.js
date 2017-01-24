@@ -21,7 +21,6 @@ function OnDisable ()
 
 function Update()
 {
-#if !UNITY_FLASH
     ++frames;
     var timeNow = Time.realtimeSinceStartup;
     if (timeNow > lastInterval + updateInterval)
@@ -31,7 +30,7 @@ function Update()
 			var go : GameObject = new GameObject("FPS Display", GUIText);
 			go.hideFlags = HideFlags.HideAndDontSave;
 			go.transform.position = Vector3(0,0,0);
-			gui = go.guiText;
+			gui = go.GetComponent.<GUIText>();
 			gui.pixelOffset = Vector2(5,55);
 		}
         var fps : float = frames / (timeNow - lastInterval);
@@ -40,5 +39,4 @@ function Update()
         frames = 0;
         lastInterval = timeNow;
     }
-#endif
 }
